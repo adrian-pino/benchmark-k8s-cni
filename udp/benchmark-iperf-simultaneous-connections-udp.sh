@@ -54,7 +54,46 @@ for i in {1..10}
 do
     echo "Iteration $i: Simultaneous connections: $i"
     kubectl create ns benchmarking-udp-$i
-    # TODO: Create netpol
+    cat <<- EOF | kubectl create -f -
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: deny-all-except-dns
+      namespace: benchmarking-tcp-$i
+    spec:
+      podSelector: {}
+      policyTypes:
+      - Ingress
+      - Egress
+      egress:
+      - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+EOF
+    cat <<- EOF | kubectl create -f -
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: allow-traffic-benchmarking-namespace
+      namespace: benchmarking-tcp-$i
+    spec:
+      podSelector: {}
+      policyTypes:
+      - Ingress
+      - Egress
+      ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: benchmarking
+      egress:
+      - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: benchmarking
+EOF
     cat <<- EOF | kubectl create -f -
     apiVersion: batch/v1
     kind: Job

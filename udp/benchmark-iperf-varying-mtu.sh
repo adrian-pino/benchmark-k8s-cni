@@ -44,35 +44,7 @@ sleep 5
 
 IPERF_SERVER_IP=$(kubectl -n benchmarking get pod iperf-server-udp -o wide --no-headers | awk '{print $6}')
 
-# 2) Deploy Iperf server
-echo "----------------------------------------------------------------------------------------"
-echo "Deploying an Iperf server listening for UDP connections"
-echo "----------------------------------------------------------------------------------------"
-echo ""
-kubectl create ns benchmarking
-cat <<EOF | kubectl create -f -
-apiVersion: v1
-kind: Pod
-metadata:
-    namespace: benchmarking
-  name: iperf-server-udp
-  labels:
-    app: "iperf-server-udp"
-spec:
-  containers:
-    - name: iperf-server
-      image: adrianpino/ubuntu22.04-iperf
-      command:
-        - "/bin/bash"
-        - "-c"
-        - "iperf -s -u"
-  nodeSelector:
-    kubernetes.io/hostname: $NODE_NAME_IPERF_CLIENT
-EOF
-echo ""
-sleep 5
-
-# 3) Deploy Iperf Clients: Kubernetes jobs
+# 2) Deploy Iperf Clients: Kubernetes jobs
 echo "----------------------------------------------------------------------------------------"
 echo "Creating Kubernetes jobs that run Iperf test varying the payload size"
 echo "----------------------------------------------------------------------------------------"
