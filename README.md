@@ -20,6 +20,3 @@ sudo chmod +x tcp/
 
 ## Suggestions
 Improvements & suggestions, are more than welcome.
-
-## Lead developers
-- Adrian Pino  Martínez (adrian.pino@i2cat.net)
